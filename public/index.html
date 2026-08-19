@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="no" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Nota</title>
+    <meta
+      name="description"
+      content="Nøytral dagsbrief. De viktigste sakene, kildesammenlignet."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/newsreader-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <script src="/js/theme.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#content">Hopp til innhold</a>
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a href="/" data-nav class="wordmark">Nota</a>
+        <nav class="masthead__nav" aria-label="Hovedmeny">
+          <a href="/" data-nav data-route="home">Forside</a>
+          <a href="/arkiv" data-nav data-route="archive">Arkiv</a>
+        </nav>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Bytt til lys modus"
+        >
+          <span class="theme-toggle__mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+    <main id="content" class="app" tabindex="-1"></main>
+    <footer class="site-footer">
+      <p>Nøytral dagsbrief. Ingen meningsstoff.</p>
+    </footer>
+    <script type="module" src="/js/main.js"></script>
+  </body>
+</html>
