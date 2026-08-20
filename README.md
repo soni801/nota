@@ -96,7 +96,7 @@ Open [http://127.0.0.1:8787](http://127.0.0.1:8787).
 In the Cloudflare dashboard:
 
 1. **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
-2. Select `soni801/news-aggregator`, branch `main`.
+2. Select `soni801/nota`, branch `main`.
 3. Build settings:
    - Framework preset: **None**
    - Build command: leave empty
