@@ -2,7 +2,7 @@
 
 Thin shell for a personal, neutral news site on Cloudflare Workers (static assets + KV). The homepage, archive and article pages render runtime data from KV via `/api/*`. News content is not stored in this repository.
 
-UI language: Norwegian. Dark mode is the default.
+UI language: Norwegian. Code and identifiers are English. Dark mode is the default.
 
 ## Stack
 
@@ -10,6 +10,64 @@ UI language: Norwegian. Dark mode is the default.
 - Workers KV (`NEWS_KV`)
 - Hono (API)
 - Vanilla HTML/CSS/JS modules (no bundler)
+
+## Architecture
+
+Static files in `public/` are the shell. `src/index.ts` is a Hono worker. Wrangler sends `/api/*` to the worker first; everything else is an asset, with SPA fallback to `index.html` so `/sak/...` and `/arkiv` work on refresh.
+
+```
+Browser  →  /           GET /api/home
+         →  /arkiv      GET /api/archive
+         →  /sak/:id    GET /api/articles/:id
+Writer   →  POST /api/ingest  (Bearer INGEST_TOKEN)  →  NEWS_KV
+```
+
+Homepage is the **five latest editions** (dates that exist in the index), not a rolling calendar window.
+
+Public URLs are Norwegian (`/arkiv`, `/sak`, `?kategori=`). The API query name is `category`.
+
+### KV keys
+
+| Key | Value |
+|---|---|
+| `meta` | Category list and `updatedAt` |
+| `feed:home` | Denormalized last five editions (teasers). Homepage is one read. |
+| `index:dates` | All edition dates, newest first |
+| `index:search` | Compact search corpus (title, dek, summary, category, cover) |
+| `day:{YYYY-MM-DD}` | One day's teasers |
+| `article:{id}` | Full article. Id is `{date}-{slug}`. |
+
+There is no KV query API. Search and category filters scan `index:search` in the worker (substring, NFC, case-insensitive; æ/ø/å are kept). Ingest is single-writer and idempotent per date: it writes articles, the day doc, then rebuilds dates, search, and `feed:home`.
+
+### HTTP API
+
+| Method | Path | Auth |
+|---|---|---|
+| `GET` | `/api/health` | public |
+| `GET` | `/api/meta` | public |
+| `GET` | `/api/home?category=` | public |
+| `GET` | `/api/articles/:id` | public |
+| `GET` | `/api/days/:date` | public |
+| `GET` | `/api/archive?q=&category=&from=&to=&page=&pageSize=` | public |
+| `POST` | `/api/ingest` | `Authorization: Bearer` |
+
+JSON errors: `{ "error": { "code": "...", "message": "..." } }` with Norwegian `message` for the UI.
+
+Article JSON (cover required, optional inline `figures`) is specified in [docs/ingest-contract.md](docs/ingest-contract.md).
+
+### Layout
+
+| Path | Role |
+|---|---|
+| `src/index.ts` | Worker entry, route registration |
+| `src/schema.ts` | Types and ingest validation |
+| `src/copy.ts` | Norwegian API error strings and category labels |
+| `src/keys.ts` | KV key helpers |
+| `src/lib/` | Auth, KV JSON, search, slug, feed rebuilds |
+| `src/routes/` | One file per endpoint group |
+| `public/js/copy.js` | Norwegian UI copy and public path helpers |
+| `public/js/main.js` | Boot, theme, client router |
+| `public/js/render/` | View renderers (escape all KV text) |
 
 ## Local development
 

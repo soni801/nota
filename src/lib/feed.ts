@@ -44,6 +44,7 @@ export async function rebuildSearch(
   } satisfies SearchIndex);
 }
 
+/** Keep `feed:home` as the five newest editions so the homepage is one KV read. */
 export async function rebuildHome(kv: KVNamespace, dates: string[], now: string): Promise<void> {
   const latest = dates.slice(0, 5);
   const days: DayDoc[] = [];

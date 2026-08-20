@@ -21,6 +21,7 @@ export type Image = {
   sourceUrl: string | null;
 };
 
+/** Inline image. `after` is a 0-based paragraph index in `summary`. */
 export type Figure = Image & {
   after: number;
 };

@@ -39,6 +39,7 @@ export const copy = {
   ],
 };
 
+/** Public URLs stay Norwegian. The API query name is `category`. */
 export const paths = {
   home: "/",
   archive: "/arkiv",

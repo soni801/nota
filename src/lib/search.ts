@@ -7,6 +7,7 @@ export type SearchOpts = {
   to?: string;
 };
 
+/** NFC + lowercase. Diacritics are kept so "ol" does not match "øl". */
 export function normalizeQuery(q: string): string {
   return q.normalize("NFC").toLowerCase().trim();
 }
@@ -24,6 +25,7 @@ export function filterSearchDocs(docs: SearchDoc[], opts: SearchOpts): SearchDoc
   }
   if (opts.q) {
     const terms = normalizeQuery(opts.q).split(/\s+/).filter(Boolean);
+    // All terms must match as substrings of the prebuilt `text` field.
     out = out.filter((d) => terms.every((term) => d.text.includes(term)));
   }
   return [...out].sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));

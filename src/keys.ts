@@ -1,3 +1,4 @@
+/** KV key map. Lookups only — never list() on the read path. */
 export const KEYS = {
   meta: "meta",
   home: "feed:home",

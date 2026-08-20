@@ -15,6 +15,7 @@ import {
   type DayDoc,
 } from "../schema";
 
+/** Single-writer, idempotent per date. Replaces that day's articles and rebuilds indexes. */
 export function registerIngest(app: Hono<{ Bindings: Bindings }>) {
   app.post("/api/ingest", async (c) => {
     if (!authorize(c.req.header("Authorization"), c.env.INGEST_TOKEN)) {
