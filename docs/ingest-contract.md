@@ -10,7 +10,7 @@ This repository does not contain news content. Keep edition JSON outside the rep
 Authorization: Bearer <INGEST_TOKEN>
 ```
 
-Without a valid token: `401`. Set the token with `wrangler secret put INGEST_TOKEN`. Locally: `.dev.vars`.
+Without a valid token: `401`. In Cloudflare Pages: Settings → Environment variables → `INGEST_TOKEN` (secret). Locally: `.dev.vars`.
 
 ## Body
 

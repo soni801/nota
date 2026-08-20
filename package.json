@@ -4,12 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler pages dev --kv=NEWS_KV",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "node scripts/seed.mjs",
-    "types": "wrangler types --env-interface CloudflareBindings"
+    "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
     "hono": "^4.9.0"

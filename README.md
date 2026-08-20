@@ -1,19 +1,20 @@
 # Nota
 
-Thin shell for a personal, neutral news site on Cloudflare Workers (static assets + KV). The homepage, archive and article pages render runtime data from KV via `/api/*`. News content is not stored in this repository.
+Thin shell for a personal, neutral news site on **Cloudflare Pages**. The homepage, archive and article pages render runtime data from KV via Pages Functions under `/api/*`. News content is not stored in this repository.
 
 UI language: Norwegian. Code and identifiers are English. Dark mode is the default.
 
 ## Stack
 
-- Cloudflare Workers + Static Assets
+- Cloudflare Pages (static shell in `public/`)
+- Pages Functions (`functions/api/`)
 - Workers KV (`NEWS_KV`)
 - Hono (API)
 - Vanilla HTML/CSS/JS modules (no bundler)
 
 ## Architecture
 
-Static files in `public/` are the shell. `src/index.ts` is a Hono worker. Wrangler sends `/api/*` to the worker first; everything else is an asset, with SPA fallback to `index.html` so `/sak/...` and `/arkiv` work on refresh.
+Static files in `public/` are the shell. Pages Functions under `functions/api/` handle `/api/*` and call into `src/`. Deep links (`/arkiv`, `/sak/...`) rewrite to `index.html`.
 
 ```
 Browser  →  /           GET /api/home
@@ -37,7 +38,7 @@ Public URLs are Norwegian (`/arkiv`, `/sak`, `?kategori=`). The API query name i
 | `day:{YYYY-MM-DD}` | One day's teasers |
 | `article:{id}` | Full article. Id is `{date}-{slug}`. |
 
-There is no KV query API. Search and category filters scan `index:search` in the worker (substring, NFC, case-insensitive; æ/ø/å are kept). Ingest is single-writer and idempotent per date: it writes articles, the day doc, then rebuilds dates, search, and `feed:home`.
+There is no KV query API. Search and category filters scan `index:search` in the Function (substring, NFC, case-insensitive; æ/ø/å are kept). Ingest is single-writer and idempotent per date: it writes articles, the day doc, then rebuilds dates, search, and `feed:home`.
 
 ### HTTP API
 
@@ -59,7 +60,8 @@ Article JSON (cover required, optional inline `figures`) is specified in [docs/i
 
 | Path | Role |
 |---|---|
-| `src/index.ts` | Worker entry, route registration |
+| `functions/api/[[path]].ts` | Pages Function entry for `/api/*` |
+| `src/index.ts` | Hono app and route registration |
 | `src/schema.ts` | Types and ingest validation |
 | `src/copy.ts` | Norwegian API error strings and category labels |
 | `src/keys.ts` | KV key helpers |
@@ -89,33 +91,30 @@ The JSON file is one edition object or an array of edition objects. Put working 
 
 Open [http://127.0.0.1:8787](http://127.0.0.1:8787).
 
-## Deploy
+## Deploy (Cloudflare Pages)
 
-1. Create a KV namespace:
+In the Cloudflare dashboard:
 
-```bash
-npx wrangler kv namespace create NEWS_KV
-```
+1. **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Select `soni801/news-aggregator`, branch `main`.
+3. Build settings:
+   - Framework preset: **None**
+   - Build command: leave empty
+   - Build output directory: `public`
+4. **Create KV namespace** (Storage → KV) if you do not have one. Then in the Pages project: **Settings → Bindings → KV namespace**
+   - Variable name: `NEWS_KV`
+   - Namespace: the one you created
+5. **Settings → Environment variables**
+   - Name: `INGEST_TOKEN`
+   - Value: a long random secret
+   - Encrypt / production
+6. Save and **deploy**. If you added the binding or secret after the first deploy, trigger a new deployment.
 
-2. Paste the `id` into `wrangler.jsonc` under `kv_namespaces`.
-
-3. Set the secret:
-
-```bash
-npx wrangler secret put INGEST_TOKEN
-```
-
-4. Publish:
-
-```bash
-npm run deploy
-```
-
-Do not use `wrangler pages deploy`. This is a Worker project.
+The site is empty until you `POST /api/ingest` with that token.
 
 ## Updating content
 
-An analyst (or a separate Worker) posts JSON to `POST /api/ingest`. Contract: [docs/ingest-contract.md](docs/ingest-contract.md).
+An analyst (or a separate job) posts JSON to `POST /api/ingest`. Contract: [docs/ingest-contract.md](docs/ingest-contract.md).
 
 After ingest the homepage updates without a redeploy.
 
