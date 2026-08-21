@@ -99,7 +99,7 @@ In the Cloudflare dashboard:
 2. Select `soni801/nota`, branch `main`.
 3. Build settings:
    - Framework preset: **None**
-   - Build command: leave empty
+   - Build command: `npm ci` (required so Pages Functions can resolve `hono`)
    - Build output directory: `public`
 4. **Create KV namespace** (Storage → KV) if you do not have one. Then in the Pages project: **Settings → Bindings → KV namespace**
    - Variable name: `NEWS_KV`
