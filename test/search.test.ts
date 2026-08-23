@@ -23,6 +23,16 @@ const docs: SearchDoc[] = [
     sourceCount: 4,
     image: { url: "https://example.com/acme.jpg", alt: "Acme" },
   },
+  {
+    id: "2026-08-16-congress-budget",
+    date: "2026-08-16",
+    category: "usa",
+    title: "Congress passes budget",
+    dek: "Spending bill advances",
+    text: "congress passes budget spending bill advances",
+    sourceCount: 3,
+    image: { url: "https://example.com/congress.jpg", alt: "Congress" },
+  },
 ];
 
 describe("search", () => {
@@ -48,6 +58,14 @@ describe("search", () => {
     const hits = filterSearchDocs(docs, { category: "teknologi" });
     expect(hits).toHaveLength(1);
     expect(hits[0].id).toBe("2026-08-17-acme-model");
+  });
+
+  it("filters by multiple categories", () => {
+    const hits = filterSearchDocs(docs, { categories: ["norge", "teknologi"] });
+    expect(hits.map((d) => d.id)).toEqual([
+      "2026-08-18-central-bank-rates",
+      "2026-08-17-acme-model",
+    ]);
   });
 
   it("filters by date range", () => {

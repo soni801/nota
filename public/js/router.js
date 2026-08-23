@@ -1,17 +1,18 @@
+import { parseCategories } from "./config.js";
 import { paths } from "./copy.js";
 
 export function parseRoute(pathname = location.pathname, search = location.search) {
   const params = new URLSearchParams(search);
   const path = pathname.replace(/\/+$/, "") || "/";
-  const category = params.get(paths.categoryQuery) || "";
+  const categories = parseCategories(params.get(paths.categoryQuery));
   if (path === "/") {
-    return { name: "home", category };
+    return { name: "home", categories };
   }
   if (path === paths.archive) {
     return {
       name: "archive",
       q: params.get("q") || "",
-      category,
+      categories,
       page: Math.max(1, Number.parseInt(params.get("page") || "1", 10) || 1),
     };
   }

@@ -65,6 +65,18 @@ describe("GET /api/archive", () => {
     expect(body.days[0].articles[0].category).toBe("usa");
   });
 
+  it("filters by multiple categories", async () => {
+    const { app, env } = setup();
+    await seed(app, env);
+    const res = await app.request("/api/archive?category=norge,teknologi", {}, env);
+    const body = await res.json();
+    expect(body.days).toHaveLength(1);
+    expect(body.days[0].articles.map((a: { category: string }) => a.category).sort()).toEqual([
+      "norge",
+      "teknologi",
+    ]);
+  });
+
   it("paginates dates", async () => {
     const { app, env } = setup();
     await seed(app, env);

@@ -1,4 +1,4 @@
-import { CATEGORIES, categoryLabel, SITE_NAME } from "../config.js";
+import { CATEGORIES, categoryLabel, SITE_NAME, serializeCategories, toggleCategory } from "../config.js";
 import { copy, paths } from "../copy.js";
 import { escapeHtml, formatDate, sourceLabel } from "../dom.js";
 import { emptyHtml, errorHtml, skeletonHtml } from "./empty.js";
@@ -43,37 +43,45 @@ export function dayHtml(day) {
   </section>`;
 }
 
-export function filterBarHtml(active, { home = true, q = "" } = {}) {
+export function filterBarHtml(selected = [], { home = true, q = "" } = {}) {
   const base = home ? paths.home : paths.archive;
   const items = [{ slug: "", label: copy.all }, ...CATEGORIES.map((c) => ({ slug: c.slug, label: categoryLabel(c.slug) }))];
   return `<nav class="filters" aria-label="${escapeHtml(copy.categoryNav)}">${items
     .map((item) => {
       const params = new URLSearchParams();
       if (!home && q) params.set("q", q);
-      if (item.slug) params.set(paths.categoryQuery, item.slug);
+      const next = item.slug ? toggleCategory(selected, item.slug) : [];
+      const serialized = serializeCategories(next);
+      if (serialized) params.set(paths.categoryQuery, serialized);
       const qs = params.toString();
       const href = qs ? `${base}?${qs}` : base;
-      const cls = item.slug === active ? "is-active" : "";
-      return `<a href="${href}" data-nav class="${cls}">${escapeHtml(item.label)}</a>`;
+      const isActive = item.slug ? selected.includes(item.slug) : selected.length === 0;
+      const cls = isActive ? "is-active" : "";
+      const current = isActive ? ` aria-current="true"` : "";
+      return `<a href="${href}" data-nav class="${cls}"${current}>${escapeHtml(item.label)}</a>`;
     })
     .join("")}</nav>`;
 }
 
-export function renderHome(root, { loading, error, days, category }) {
+function emptyMessage(categories) {
+  if (!categories.length) return copy.emptyHome;
+  return categories.length === 1 ? copy.emptyCategory : copy.emptyCategories;
+}
+
+export function renderHome(root, { loading, error, days, categories = [] }) {
   document.title = SITE_NAME;
   if (loading) {
-    root.innerHTML = filterBarHtml(category) + skeletonHtml();
+    root.innerHTML = filterBarHtml(categories) + skeletonHtml();
     return;
   }
   if (error) {
-    root.innerHTML = filterBarHtml(category) + errorHtml(copy.fetchHomeError);
+    root.innerHTML = filterBarHtml(categories) + errorHtml(copy.fetchHomeError);
     return;
   }
   if (!days.length) {
-    const message = category ? copy.emptyCategory : copy.emptyHome;
-    root.innerHTML = filterBarHtml(category) + emptyHtml(message);
+    root.innerHTML = filterBarHtml(categories) + emptyHtml(emptyMessage(categories));
     return;
   }
-  root.innerHTML = filterBarHtml(category) + days.map(dayHtml).join("");
+  root.innerHTML = filterBarHtml(categories) + days.map(dayHtml).join("");
   bindImageFallback(root);
 }

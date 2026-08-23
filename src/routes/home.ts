@@ -3,7 +3,7 @@ import type { Bindings } from "../env";
 import { KEYS } from "../keys";
 import { CACHE, json } from "../lib/http";
 import { getJson } from "../lib/kv";
-import { isCategory, type HomeFeed } from "../schema";
+import { parseCategories, type HomeFeed } from "../schema";
 
 export function registerHome(app: Hono<{ Bindings: Bindings }>) {
   app.get("/api/home", async (c) => {
@@ -12,11 +12,12 @@ export function registerHome(app: Hono<{ Bindings: Bindings }>) {
       updatedAt: new Date().toISOString(),
       days: [],
     };
-    const category = c.req.query("category");
-    if (category && isCategory(category)) {
+    const categories = parseCategories(c.req.query("category"));
+    if (categories.length) {
+      const allowed = new Set(categories);
       const days = feed.days
         .map((day) => {
-          const articles = day.articles.filter((a) => a.category === category);
+          const articles = day.articles.filter((a) => allowed.has(a.category));
           return { ...day, articles, articleCount: articles.length };
         })
         .filter((day) => day.articleCount > 0);

@@ -5,18 +5,19 @@ import { emptyHtml, errorHtml, skeletonHtml } from "./empty.js";
 import { dayHtml, filterBarHtml } from "./home.js";
 import { bindImageFallback } from "./images.js";
 
-function searchForm(q, category) {
+function searchForm(q, categories) {
+  const serialized = (categories || []).join(",");
   return `<form class="archive-search" method="get" action="${paths.archive}">
     <label class="skip" for="archive-search">${escapeHtml(copy.searchArchive)}</label>
     <input id="archive-search" type="search" name="q" value="${escapeHtml(q)}" placeholder="${escapeHtml(copy.searchArchive)}" />
-    ${category ? `<input type="hidden" name="${paths.categoryQuery}" value="${escapeHtml(category)}" />` : ""}
+    ${serialized ? `<input type="hidden" name="${paths.categoryQuery}" value="${escapeHtml(serialized)}" />` : ""}
     <button type="submit">${escapeHtml(copy.search)}</button>
   </form>`;
 }
 
-export function renderArchive(root, { loading, error, days, q, category, append, hasMore }) {
+export function renderArchive(root, { loading, error, days, q, categories = [], append, hasMore }) {
   document.title = `${copy.archive} · ${SITE_NAME}`;
-  const header = `<h1 class="page-title">${escapeHtml(copy.archive)}</h1>${searchForm(q, category)}${filterBarHtml(category, { home: false, q })}`;
+  const header = `<h1 class="page-title">${escapeHtml(copy.archive)}</h1>${searchForm(q, categories)}${filterBarHtml(categories, { home: false, q })}`;
 
   if (loading && !append) {
     root.innerHTML = header + skeletonHtml();

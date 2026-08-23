@@ -69,4 +69,41 @@ describe("GET /api/home", () => {
     expect(body.days[0].articles).toHaveLength(1);
     expect(body.days[0].articles[0].category).toBe("norge");
   });
+
+  it("filters by multiple categories and drops empty days", async () => {
+    const { app, env } = setup();
+    await app.request(
+      "/api/ingest",
+      ingestRequest(
+        dayPayload("2026-08-18", [
+          article({ category: "norge" }),
+          article({
+            category: "usa",
+            title: "Congress passes budget",
+            date: "2026-08-18",
+          }),
+        ]),
+      ),
+      env,
+    );
+    await app.request(
+      "/api/ingest",
+      ingestRequest(
+        dayPayload("2026-08-17", [
+          article({
+            category: "teknologi",
+            title: "Acme releases new model",
+            date: "2026-08-17",
+          }),
+        ]),
+      ),
+      env,
+    );
+
+    const res = await app.request("/api/home?category=norge,teknologi", {}, env);
+    const body = await res.json();
+    expect(body.days.map((d: { date: string }) => d.date)).toEqual(["2026-08-18", "2026-08-17"]);
+    expect(body.days[0].articles.map((a: { category: string }) => a.category)).toEqual(["norge"]);
+    expect(body.days[1].articles.map((a: { category: string }) => a.category)).toEqual(["teknologi"]);
+  });
 });

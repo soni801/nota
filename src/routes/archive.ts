@@ -5,7 +5,7 @@ import { CACHE, json } from "../lib/http";
 import { getJson } from "../lib/kv";
 import { filterSearchDocs } from "../lib/search";
 import {
-  isCategory,
+  parseCategories,
   type DatesIndex,
   type DayDoc,
   type SearchDoc,
@@ -50,13 +50,12 @@ function groupDocs(docs: SearchDoc[]): DayDoc[] {
 export function registerArchive(app: Hono<{ Bindings: Bindings }>) {
   app.get("/api/archive", async (c) => {
     const q = c.req.query("q")?.trim() || undefined;
-    const categoryRaw = c.req.query("category");
-    const category = categoryRaw && isCategory(categoryRaw) ? categoryRaw : undefined;
+    const categories = parseCategories(c.req.query("category"));
     const from = c.req.query("from") || undefined;
     const to = c.req.query("to") || undefined;
     const page = parsePage(c.req.query("page"), 1);
     const pageSize = Math.min(parsePage(c.req.query("pageSize"), 20), 50);
-    const filtered = Boolean(q || category || from || to);
+    const filtered = Boolean(q || categories.length || from || to);
 
     if (filtered) {
       const index = (await getJson<SearchIndex>(c.env.NEWS_KV, KEYS.search)) ?? {
@@ -64,7 +63,7 @@ export function registerArchive(app: Hono<{ Bindings: Bindings }>) {
         updatedAt: "",
         docs: [],
       };
-      const docs = filterSearchDocs(index.docs, { q, category, from, to });
+      const docs = filterSearchDocs(index.docs, { q, categories, from, to });
       const grouped = groupDocs(docs);
       const total = grouped.length;
       const days = grouped.slice((page - 1) * pageSize, page * pageSize);

@@ -117,6 +117,17 @@ export function isCategory(value: string): value is CategorySlug {
   return (CATEGORIES as readonly string[]).includes(value);
 }
 
+/** Unique known slugs in CATEGORIES order. Unknown tokens are ignored. */
+export function parseCategories(value: string | undefined | null): CategorySlug[] {
+  if (!value) return [];
+  const seen = new Set<CategorySlug>();
+  for (const part of value.split(",")) {
+    const slug = part.trim();
+    if (isCategory(slug)) seen.add(slug);
+  }
+  return CATEGORIES.filter((slug) => seen.has(slug));
+}
+
 export function categoryList(): { slug: CategorySlug; label: string }[] {
   return CATEGORIES.map((slug) => ({ slug, label: CATEGORY_LABELS[slug] }));
 }

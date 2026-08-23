@@ -27,6 +27,7 @@ export const copy = {
   loadMoreError: "Kunne ikke laste flere. Prøv igjen.",
   emptyHome: "Ingen saker de siste fem dagene.",
   emptyCategory: "Ingen saker i denne kategorien de siste fem utgavene.",
+  emptyCategories: "Ingen saker i disse kategoriene de siste fem utgavene.",
   emptyArchive: "Ingen treff i arkivet.",
   categoryNav: "Kategorier",
   categories: [

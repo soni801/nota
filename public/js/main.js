@@ -53,12 +53,12 @@ async function render() {
   root.focus({ preventScroll: true });
 
   if (route.name === "home") {
-    renderHome(root, { loading: true, days: [], category: route.category });
+    renderHome(root, { loading: true, days: [], categories: route.categories });
     try {
-      const data = await fetchHome(route.category);
-      renderHome(root, { days: data.days, category: route.category });
+      const data = await fetchHome(route.categories);
+      renderHome(root, { days: data.days, categories: route.categories });
     } catch (error) {
-      renderHome(root, { error, days: [], category: route.category });
+      renderHome(root, { error, days: [], categories: route.categories });
     }
     return;
   }
@@ -81,12 +81,12 @@ async function render() {
       loading: true,
       days: [],
       q: route.q,
-      category: route.category,
+      categories: route.categories,
     });
     try {
       const data = await fetchArchive({
         q: route.q,
-        category: route.category,
+        categories: route.categories,
         page: 1,
       });
       archivePage = 1;
@@ -95,11 +95,11 @@ async function render() {
       renderArchive(root, {
         days: data.days,
         q: route.q,
-        category: route.category,
+        categories: route.categories,
         hasMore: data.days.length < data.total,
       });
     } catch (error) {
-      renderArchive(root, { error, days: [], q: route.q, category: route.category });
+      renderArchive(root, { error, days: [], q: route.q, categories: route.categories });
     }
     return;
   }
@@ -130,7 +130,7 @@ document.addEventListener("submit", (event) => {
   const route = parseRoute();
   const params = new URLSearchParams();
   if (q) params.set("q", String(q));
-  if (route.category) params.set(paths.categoryQuery, route.category);
+  if (route.categories.length) params.set(paths.categoryQuery, route.categories.join(","));
   const qs = params.toString();
   navigate(`${paths.archive}${qs ? `?${qs}` : ""}`);
 });
@@ -141,7 +141,7 @@ async function loadMore() {
   try {
     const data = await fetchArchive({
       q: route.q,
-      category: route.category,
+      categories: route.categories,
       page: next,
     });
     archivePage = next;
@@ -149,7 +149,7 @@ async function loadMore() {
     renderArchive(root, {
       days: data.days,
       q: route.q,
-      category: route.category,
+      categories: route.categories,
       append: true,
       hasMore: archiveLoaded.length < archiveTotal,
     });

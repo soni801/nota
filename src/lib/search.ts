@@ -3,6 +3,7 @@ import type { SearchDoc } from "../schema";
 export type SearchOpts = {
   q?: string;
   category?: string;
+  categories?: readonly string[];
   from?: string;
   to?: string;
 };
@@ -14,8 +15,10 @@ export function normalizeQuery(q: string): string {
 
 export function filterSearchDocs(docs: SearchDoc[], opts: SearchOpts): SearchDoc[] {
   let out = docs;
-  if (opts.category) {
-    out = out.filter((d) => d.category === opts.category);
+  const categories = opts.categories ?? (opts.category ? [opts.category] : []);
+  if (categories.length) {
+    const allowed = new Set(categories);
+    out = out.filter((d) => allowed.has(d.category));
   }
   if (opts.from) {
     out = out.filter((d) => d.date >= opts.from!);
