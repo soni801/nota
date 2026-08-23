@@ -1,3 +1,4 @@
 /arkiv    /index.html   200
 /arkiv/   /index.html   200
+# /sak/:id is served by functions/sak/[id].ts. Fallback if the Function is missing.
 /sak/*    /index.html   200

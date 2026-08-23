@@ -7,19 +7,19 @@ UI language: Norwegian. Code and identifiers are English. Dark mode is the defau
 ## Stack
 
 - Cloudflare Pages (static shell in `public/`)
-- Pages Functions (`functions/api/`)
+- Pages Functions (`functions/api/`, `functions/sak/`)
 - Workers KV (`NEWS_KV`)
 - Hono (API)
 - Vanilla HTML/CSS/JS modules (no bundler)
 
 ## Architecture
 
-Static files in `public/` are the shell. Pages Functions under `functions/api/` handle `/api/*` and call into `src/`. Deep links (`/arkiv`, `/sak/...`) rewrite to `index.html`.
+Static files in `public/` are the shell. Pages Functions under `functions/api/` handle `/api/*` and call into `src/`. `/arkiv` rewrites to `index.html`. `/sak/:id` is a Function that serves the same shell with article Open Graph tags (title, dek, cover image) so link previews work.
 
 ```
 Browser  →  /           GET /api/home
          →  /arkiv      GET /api/archive
-         →  /sak/:id    GET /api/articles/:id
+         →  /sak/:id    HTML with OG tags, then GET /api/articles/:id
 Writer   →  POST /api/ingest  (Bearer INGEST_TOKEN)  →  NEWS_KV
 ```
 
@@ -61,11 +61,12 @@ Article JSON (cover required, optional inline `figures`) is specified in [docs/i
 | Path | Role |
 |---|---|
 | `functions/api/[[path]].ts` | Pages Function entry for `/api/*` |
+| `functions/sak/[id].ts` | Article HTML with Open Graph / Twitter Card tags |
 | `src/index.ts` | Hono app and route registration |
 | `src/schema.ts` | Types and ingest validation |
 | `src/copy.ts` | Norwegian API error strings and category labels |
 | `src/keys.ts` | KV key helpers |
-| `src/lib/` | Auth, KV JSON, search, slug, feed rebuilds |
+| `src/lib/` | Auth, KV JSON, search, slug, feed rebuilds, Open Graph |
 | `src/routes/` | One file per endpoint group |
 | `public/js/copy.js` | Norwegian UI copy and public path helpers |
 | `public/js/main.js` | Boot, theme, client router |
@@ -126,7 +127,7 @@ After ingest the homepage updates without a redeploy.
 | `/?kategori=norge` | Same, filtered |
 | `/arkiv` | Full archive |
 | `/arkiv?q=rente&kategori=norge` | Search and filter |
-| `/sak/{id}` | Full article |
+| `/sak/{id}` | Full article (HTML includes a per-article link preview) |
 
 ## Font licenses
 
