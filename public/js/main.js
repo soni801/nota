@@ -1,6 +1,6 @@
 import { fetchArchive, fetchArticle, fetchHome } from "./api.js";
 import { copy, paths } from "./copy.js";
-import { navigate, parseRoute } from "./router.js";
+import { archiveHref, navigate, parseRoute } from "./router.js";
 import { renderArchive } from "./render/archive.js";
 import { renderArticle } from "./render/article.js";
 import { renderHome } from "./render/home.js";
@@ -46,18 +46,24 @@ function setActiveNav(routeName) {
 let archivePage = 1;
 let archiveTotal = 0;
 let archiveLoaded = [];
+let archiveSearchTimer = 0;
+let viewGen = 0;
 
 async function render() {
   const route = parseRoute();
   setActiveNav(route.name);
+  clearTimeout(archiveSearchTimer);
+  const gen = (viewGen += 1);
   root.focus({ preventScroll: true });
 
   if (route.name === "home") {
     renderHome(root, { loading: true, days: [], categories: route.categories });
     try {
       const data = await fetchHome(route.categories);
+      if (gen !== viewGen) return;
       renderHome(root, { days: data.days, categories: route.categories });
     } catch (error) {
+      if (gen !== viewGen) return;
       renderHome(root, { error, days: [], categories: route.categories });
     }
     return;
@@ -67,8 +73,10 @@ async function render() {
     renderArticle(root, { loading: true });
     try {
       const article = await fetchArticle(route.id);
+      if (gen !== viewGen) return;
       renderArticle(root, { article });
     } catch (error) {
+      if (gen !== viewGen) return;
       renderArticle(root, { error });
     }
     return;
@@ -89,6 +97,7 @@ async function render() {
         categories: route.categories,
         page: 1,
       });
+      if (gen !== viewGen) return;
       archivePage = 1;
       archiveTotal = data.total;
       archiveLoaded = data.days;
@@ -99,6 +108,7 @@ async function render() {
         hasMore: data.days.length < data.total,
       });
     } catch (error) {
+      if (gen !== viewGen) return;
       renderArchive(root, { error, days: [], q: route.q, categories: route.categories });
     }
     return;
@@ -122,28 +132,69 @@ document.addEventListener("click", (event) => {
   navigate(link.href);
 });
 
+document.addEventListener("input", (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement) || input.id !== "archive-search") return;
+  clearTimeout(archiveSearchTimer);
+  archiveSearchTimer = setTimeout(() => {
+    applyArchiveSearch(input.value);
+  }, 200);
+});
+
 document.addEventListener("submit", (event) => {
   const form = event.target;
   if (!(form instanceof HTMLFormElement) || form.getAttribute("action") !== paths.archive) return;
   event.preventDefault();
   const q = new FormData(form).get("q") || "";
-  const route = parseRoute();
-  const params = new URLSearchParams();
-  if (q) params.set("q", String(q));
-  if (route.categories.length) params.set(paths.categoryQuery, route.categories.join(","));
-  const qs = params.toString();
-  navigate(`${paths.archive}${qs ? `?${qs}` : ""}`);
+  clearTimeout(archiveSearchTimer);
+  applyArchiveSearch(String(q));
 });
+
+async function applyArchiveSearch(rawQ) {
+  const q = String(rawQ ?? "").trim();
+  const route = parseRoute();
+  if (route.name !== "archive") return;
+  const href = archiveHref(q, route.categories);
+  const current = `${location.pathname}${location.search}`;
+  if (current !== href) history.replaceState({}, "", href);
+  if (route.q === q && current === href && archiveLoaded.length) return;
+  const gen = (viewGen += 1);
+  try {
+    const data = await fetchArchive({ q, categories: route.categories, page: 1 });
+    if (gen !== viewGen || parseRoute().name !== "archive") return;
+    archivePage = 1;
+    archiveTotal = data.total;
+    archiveLoaded = data.days;
+    renderArchive(root, {
+      days: data.days,
+      q,
+      categories: route.categories,
+      hasMore: data.days.length < data.total,
+      replaceResults: true,
+    });
+  } catch (error) {
+    if (gen !== viewGen || parseRoute().name !== "archive") return;
+    renderArchive(root, {
+      error,
+      days: [],
+      q,
+      categories: route.categories,
+      replaceResults: true,
+    });
+  }
+}
 
 async function loadMore() {
   const route = parseRoute();
   const next = archivePage + 1;
+  const gen = viewGen;
   try {
     const data = await fetchArchive({
       q: route.q,
       categories: route.categories,
       page: next,
     });
+    if (gen !== viewGen) return;
     archivePage = next;
     archiveLoaded = archiveLoaded.concat(data.days);
     renderArchive(root, {

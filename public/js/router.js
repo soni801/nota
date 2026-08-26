@@ -1,5 +1,14 @@
-import { parseCategories } from "./config.js";
+import { parseCategories, serializeCategories } from "./config.js";
 import { paths } from "./copy.js";
+
+export function archiveHref(q, categories = []) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  const serialized = serializeCategories(categories);
+  if (serialized) params.set(paths.categoryQuery, serialized);
+  const qs = params.toString();
+  return `${paths.archive}${qs ? `?${qs}` : ""}`;
+}
 
 export function parseRoute(pathname = location.pathname, search = location.search) {
   const params = new URLSearchParams(search);

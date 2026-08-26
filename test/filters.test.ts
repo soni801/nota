@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRoute } from "../public/js/router.js";
+import { archiveHref, parseRoute } from "../public/js/router.js";
 import { filterBarHtml } from "../public/js/render/home.js";
 
 function hrefFor(html: string, label: string): string {
@@ -28,5 +28,14 @@ describe("category filter bar", () => {
   it("keeps archive search query when toggling categories", () => {
     const html = filterBarHtml(["norge"], { home: false, q: "rente" });
     expect(hrefFor(html, "USA")).toBe("/arkiv?q=rente&kategori=norge,usa");
+  });
+});
+
+describe("archiveHref", () => {
+  it("builds archive URLs from query and categories", () => {
+    expect(archiveHref("", [])).toBe("/arkiv");
+    expect(archiveHref("rente", [])).toBe("/arkiv?q=rente");
+    expect(archiveHref("rente", ["norge"])).toBe("/arkiv?q=rente&kategori=norge");
+    expect(decodeURIComponent(archiveHref("", ["norge", "usa"]))).toBe("/arkiv?kategori=norge,usa");
   });
 });
