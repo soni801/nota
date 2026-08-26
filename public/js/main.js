@@ -1,6 +1,14 @@
 import { fetchArchive, fetchArticle, fetchHome } from "./api.js";
 import { copy, paths } from "./copy.js";
 import { archiveHref, navigate, parseRoute } from "./router.js";
+import {
+  applyScroll,
+  lockScroll,
+  nextHistoryState,
+  saveScroll,
+  scrollFromState,
+  unlockScroll,
+} from "./scroll.js";
 import { renderArchive } from "./render/archive.js";
 import { renderArticle } from "./render/article.js";
 import { renderHome } from "./render/home.js";
@@ -48,12 +56,49 @@ let archiveTotal = 0;
 let archiveLoaded = [];
 let archiveSearchTimer = 0;
 let viewGen = 0;
+let scrollTick = false;
 
-async function render() {
+history.scrollRestoration = "manual";
+
+window.addEventListener(
+  "scroll",
+  () => {
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(() => {
+      saveScroll();
+      scrollTick = false;
+    });
+  },
+  { passive: true },
+);
+
+function finishScroll(restore) {
+  if (!restore) {
+    unlockScroll();
+    applyScroll(0);
+    return;
+  }
+  const y = scrollFromState(history.state);
+  applyScroll(y);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      applyScroll(y);
+      unlockScroll();
+    });
+  });
+}
+
+async function render({ restore = false } = {}) {
   const route = parseRoute();
   setActiveNav(route.name);
   clearTimeout(archiveSearchTimer);
   const gen = (viewGen += 1);
+  if (restore) lockScroll(scrollFromState(history.state));
+  else {
+    unlockScroll();
+    applyScroll(0);
+  }
   root.focus({ preventScroll: true });
 
   if (route.name === "home") {
@@ -62,9 +107,11 @@ async function render() {
       const data = await fetchHome(route.categories);
       if (gen !== viewGen) return;
       renderHome(root, { days: data.days, categories: route.categories });
+      finishScroll(restore);
     } catch (error) {
       if (gen !== viewGen) return;
       renderHome(root, { error, days: [], categories: route.categories });
+      finishScroll(restore);
     }
     return;
   }
@@ -75,9 +122,11 @@ async function render() {
       const article = await fetchArticle(route.id);
       if (gen !== viewGen) return;
       renderArticle(root, { article });
+      finishScroll(restore);
     } catch (error) {
       if (gen !== viewGen) return;
       renderArticle(root, { error });
+      finishScroll(restore);
     }
     return;
   }
@@ -107,8 +156,9 @@ async function render() {
         categories: route.categories,
         hasMore: data.days.length < data.total,
         replaceResults: true,
-        enter: true,
+        enter: !restore,
       });
+      finishScroll(restore);
     } catch (error) {
       if (gen !== viewGen) return;
       renderArchive(root, {
@@ -118,12 +168,14 @@ async function render() {
         categories: route.categories,
         replaceResults: true,
       });
+      finishScroll(restore);
     }
     return;
   }
 
   document.title = `${copy.pageNotFound} · ${copy.siteName}`;
   root.innerHTML = emptyHtml(copy.pageNotFound);
+  finishScroll(restore);
 }
 
 document.addEventListener("click", (event) => {
@@ -164,7 +216,9 @@ async function applyArchiveSearch(rawQ) {
   if (route.name !== "archive") return;
   const href = archiveHref(q, route.categories);
   const current = `${location.pathname}${location.search}`;
-  if (current !== href) history.replaceState({}, "", href);
+  if (current !== href) {
+    history.replaceState(nextHistoryState(history.state, window.scrollY), "", href);
+  }
   if (route.q === q && current === href && archiveLoaded.length) return;
   const gen = (viewGen += 1);
   try {
@@ -218,6 +272,6 @@ async function loadMore() {
   }
 }
 
-window.addEventListener("popstate", render);
-window.addEventListener("nota:navigate", render);
+window.addEventListener("popstate", () => render({ restore: true }));
+window.addEventListener("nota:navigate", () => render({ restore: false }));
 render();

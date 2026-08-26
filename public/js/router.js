@@ -1,5 +1,6 @@
 import { parseCategories, serializeCategories } from "./config.js";
 import { paths } from "./copy.js";
+import { saveScroll } from "./scroll.js";
 
 export function archiveHref(q, categories = []) {
   const params = new URLSearchParams();
@@ -34,7 +35,8 @@ export function parseRoute(pathname = location.pathname, search = location.searc
 
 export function navigate(href, { replace = false } = {}) {
   const url = new URL(href, location.origin);
-  if (replace) history.replaceState({}, "", url.pathname + url.search);
-  else history.pushState({}, "", url.pathname + url.search);
+  saveScroll();
+  if (replace) history.replaceState({ scrollY: 0 }, "", url.pathname + url.search);
+  else history.pushState({ scrollY: 0 }, "", url.pathname + url.search);
   window.dispatchEvent(new Event("nota:navigate"));
 }
