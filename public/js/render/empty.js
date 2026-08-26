@@ -2,11 +2,14 @@ import { escapeHtml } from "../dom.js";
 
 export function skeletonHtml() {
   return `<div class="skeleton" aria-hidden="true">
+    <div class="skeleton__heading"></div>
     <div class="skeleton__block"></div>
+    <div class="skeleton__block skeleton__block--dek"></div>
     <div class="skeleton__rule"></div>
     <div class="skeleton__block"></div>
+    <div class="skeleton__block skeleton__block--dek"></div>
     <div class="skeleton__rule"></div>
-    <div class="skeleton__block"></div>
+    <div class="skeleton__block skeleton__block--mid"></div>
   </div>`;
 }
 

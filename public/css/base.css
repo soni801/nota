@@ -95,8 +95,44 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .app > * {
-    animation: fade 120ms ease-out;
+  .masthead {
+    animation: fade 420ms ease-out both;
+  }
+
+  .site-footer {
+    animation: fade 500ms 80ms ease-out both;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > * {
+    animation: reveal 380ms cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms) both;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(1) {
+    --d: 0ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(2) {
+    --d: 55ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(3) {
+    --d: 100ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(4) {
+    --d: 140ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(5) {
+    --d: 175ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(6) {
+    --d: 205ms;
+  }
+
+  :is(.app, [data-archive-results].is-enter) > *:nth-child(n + 7) {
+    --d: 230ms;
   }
 }
 
@@ -106,5 +142,16 @@ a:hover {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

@@ -466,18 +466,53 @@
 
 .skeleton {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+.skeleton__heading {
+  height: 1.35rem;
+  width: 9.5rem;
+  background: var(--rule);
+  margin: 0 0 var(--space-2);
 }
 
 .skeleton__rule {
   height: 1px;
   background: var(--rule);
+  margin: var(--space-1) 0;
 }
 
 .skeleton__block {
-  height: 1.1rem;
+  height: 1.05rem;
   background: var(--rule);
-  width: 70%;
+  width: 78%;
+}
+
+.skeleton__block--dek {
+  height: 0.7rem;
+  width: 58%;
+  opacity: 0.7;
+}
+
+.skeleton__block--mid {
+  width: 64%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton__heading,
+  .skeleton__block {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 @media (max-width: 420px) {

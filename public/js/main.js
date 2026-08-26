@@ -106,10 +106,18 @@ async function render() {
         q: route.q,
         categories: route.categories,
         hasMore: data.days.length < data.total,
+        replaceResults: true,
+        enter: true,
       });
     } catch (error) {
       if (gen !== viewGen) return;
-      renderArchive(root, { error, days: [], q: route.q, categories: route.categories });
+      renderArchive(root, {
+        error,
+        days: [],
+        q: route.q,
+        categories: route.categories,
+        replaceResults: true,
+      });
     }
     return;
   }

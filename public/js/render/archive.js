@@ -60,7 +60,7 @@ export function archiveDayHtml(day, { showDek = false } = {}) {
   </section>`;
 }
 
-export function renderArchive(root, { loading, error, days, q, categories = [], append, hasMore, replaceResults }) {
+export function renderArchive(root, { loading, error, days, q, categories = [], append, hasMore, replaceResults, enter }) {
   document.title = `${copy.archive} · ${SITE_NAME}`;
   const resultsHtml = archiveResultsHtml({ loading, error, days, q, hasMore });
 
@@ -81,6 +81,7 @@ export function renderArchive(root, { loading, error, days, q, categories = [], 
     const results = root.querySelector("[data-archive-results]");
     if (results) {
       syncArchiveFilterHrefs(root, q, categories);
+      results.classList.toggle("is-enter", Boolean(enter));
       results.innerHTML = resultsHtml;
       return;
     }
