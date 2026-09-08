@@ -1,6 +1,6 @@
 import { copy } from "./copy.js";
 
-export const SITE_NAME = copy.siteName;
+export const SITE_NAME = globalThis.location?.host ?? "";
 export const CATEGORIES = copy.categories;
 
 export function categoryLabel(slug) {

@@ -80,7 +80,7 @@ npm test
 npm run dev
 ```
 
-Copy `.dev.vars.example` to `.dev.vars` and set `INGEST_TOKEN`.
+Copy `.dev.vars.example` to `.dev.vars` and set `INGEST_TOKEN`. `FOOTER_NOTE` is optional: a short plain-text colophon for this deployment. Leave it unset if the shell should stay generic.
 
 The site starts empty. Publish editions with `POST /api/ingest` (see [docs/ingest-contract.md](docs/ingest-contract.md)), or from a JSON file you keep outside the repo:
 
@@ -109,6 +109,7 @@ In the Cloudflare dashboard:
    - Name: `INGEST_TOKEN`
    - Value: a long random secret
    - Encrypt / production
+   - Optional: `FOOTER_NOTE` — a short muted footer line for this deployment (plain text). Leave unset for a generic site.
 6. Save and **deploy**. If you added the binding or secret after the first deploy, trigger a new deployment.
 
 The site is empty until you `POST /api/ingest` with that token.

@@ -1,5 +1,7 @@
-import { fetchArchive, fetchArticle, fetchHome } from "./api.js";
+import { fetchArchive, fetchArticle, fetchHome, fetchMeta } from "./api.js";
+import { SITE_NAME } from "./config.js";
 import { copy, paths } from "./copy.js";
+import { applyFooterNote } from "./dom.js";
 import { archiveHref, navigate, parseRoute } from "./router.js";
 import {
   applyScroll,
@@ -173,7 +175,7 @@ async function render({ restore = false } = {}) {
     return;
   }
 
-  document.title = `${copy.pageNotFound} · ${copy.siteName}`;
+  document.title = `${copy.pageNotFound} · ${SITE_NAME}`;
   root.innerHTML = emptyHtml(copy.pageNotFound);
   finishScroll(restore);
 }
@@ -275,3 +277,7 @@ async function loadMore() {
 window.addEventListener("popstate", () => render({ restore: true }));
 window.addEventListener("nota:navigate", () => render({ restore: false }));
 render();
+
+fetchMeta()
+  .then((meta) => applyFooterNote(document.querySelector(".site-footer__note"), meta.footerNote))
+  .catch(() => {});

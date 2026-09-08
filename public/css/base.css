@@ -82,6 +82,10 @@ a:hover {
   margin: var(--space-4) 0 0;
 }
 
+.site-footer__note {
+  margin-top: var(--space-2);
+}
+
 @media (min-width: 640px) {
   .app {
     padding-left: var(--space-5);

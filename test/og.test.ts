@@ -28,7 +28,8 @@ describe("injectArticleMeta", () => {
       "https://nota.example/sak/2026-08-18-norges-bank",
     );
 
-    expect(html).toContain("<title>Norges Bank holder renten uendret · Nota</title>");
+    expect(html).toContain("<title>Norges Bank holder renten uendret · nota.example</title>");
+    expect(html).toContain('property="og:site_name" content="nota.example"');
     expect(html).toContain(
       'name="description" content="Komiteen viser til usikker inflasjon."',
     );
@@ -97,6 +98,8 @@ describe("injectArticleMeta", () => {
   it("injects into the real index.html shell", async () => {
     const { injectArticleMeta } = await import("../src/lib/og");
     const shell = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+    expect(shell).not.toContain("Nota");
+    expect(shell).toContain('src="/js/brand.js"');
     const html = injectArticleMeta(
       shell,
       {
@@ -107,13 +110,31 @@ describe("injectArticleMeta", () => {
       "https://nota.example/sak/en-sak",
     );
 
-    expect(html).toContain("<title>En sak · Nota</title>");
+    expect(html).toContain("<title>En sak · nota.example</title>");
+    expect(html).toContain('property="og:site_name" content="nota.example"');
     expect(html).toContain('property="og:image" content="https://cdn.example/foto.jpg"');
     expect(html).toContain('property="og:type" content="article"');
     expect(html).not.toContain('property="og:type" content="website"');
     expect(html).toContain('charset="utf-8"');
     expect(html).toContain('src="/js/main.js"');
     expect(html.match(/property="og:title"/g)).toHaveLength(1);
+  });
+
+  it("uses the canonical host, including port, as the site name", async () => {
+    const { injectArticleMeta } = await import("../src/lib/og");
+    const html = injectArticleMeta(
+      SHELL,
+      {
+        title: "En sak",
+        dek: "Ingress.",
+        image: { url: "https://cdn.example/foto.jpg", alt: "Foto" },
+      },
+      "http://localhost:8788/sak/en-sak",
+    );
+
+    expect(html).toContain("<title>En sak · localhost:8788</title>");
+    expect(html).toContain('property="og:site_name" content="localhost:8788"');
+    expect(html).not.toContain("Nota");
   });
 });
 

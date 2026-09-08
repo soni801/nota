@@ -1,1 +1,3 @@
 INGEST_TOKEN=bytt-meg
+# Optional muted footer line for this deployment only. Leave unset for a generic site.
+# FOOTER_NOTE=

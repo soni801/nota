@@ -1,5 +1,4 @@
 export const copy = {
-  siteName: "Nota",
   tagline: "Nøytral dagsbrief. Ingen meningsstoff.",
   description: "Nøytral dagsbrief. De viktigste sakene, kildesammenlignet.",
   skipToContent: "Hopp til innhold",

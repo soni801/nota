@@ -2,7 +2,9 @@ import { articleKey } from "../keys";
 import { getJson } from "./kv";
 import type { Article } from "../schema";
 
-const SITE_NAME = "Nota";
+function siteNameFromUrl(url: string): string {
+  return new URL(url).host;
+}
 
 export type OgInput = {
   title: string;
@@ -28,12 +30,13 @@ function strip(html: string, pattern: RegExp): string {
 }
 
 export function injectArticleMeta(html: string, article: OgInput, canonicalUrl: string): string {
-  const pageTitle = `${article.title} · ${SITE_NAME}`;
+  const siteName = siteNameFromUrl(canonicalUrl);
+  const pageTitle = `${article.title} · ${siteName}`;
   const tags = [
     `<title>${escapeHtml(pageTitle)}</title>`,
     meta("name", "description", article.dek),
     `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`,
-    meta("property", "og:site_name", SITE_NAME),
+    meta("property", "og:site_name", siteName),
     meta("property", "og:locale", "nb_NO"),
     meta("property", "og:type", "article"),
     meta("property", "og:title", article.title),

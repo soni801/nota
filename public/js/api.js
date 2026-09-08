@@ -10,6 +10,10 @@ async function getJson(url) {
   return body;
 }
 
+export function fetchMeta() {
+  return getJson("/api/meta");
+}
+
 export function fetchHome(categories = []) {
   const category = Array.isArray(categories) ? categories.join(",") : categories || "";
   const q = category ? `?category=${encodeURIComponent(category)}` : "";

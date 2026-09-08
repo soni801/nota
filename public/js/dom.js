@@ -21,3 +21,10 @@ export function formatDate(isoDate) {
 export function sourceLabel(count) {
   return count === 1 ? copy.oneSource : copy.nSources(count);
 }
+
+export function applyFooterNote(el, note) {
+  if (!el) return;
+  const text = typeof note === "string" ? note.trim() : "";
+  el.textContent = text;
+  el.hidden = !text;
+}
