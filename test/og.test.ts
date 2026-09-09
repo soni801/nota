@@ -100,6 +100,9 @@ describe("injectArticleMeta", () => {
     const shell = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
     expect(shell).not.toContain("Nota");
     expect(shell).toContain('src="/js/brand.js"');
+    expect(shell).toContain('class="brand"');
+    expect(shell).toContain('class="brand__mark"');
+    expect(shell).toContain('class="wordmark"');
     const html = injectArticleMeta(
       shell,
       {
