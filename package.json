@@ -10,7 +10,7 @@
     "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
-    "hono": "^4.9.0"
+    "hono": "^4.13.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
